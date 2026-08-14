@@ -30,24 +30,20 @@ def bootstrap_ollama_environment():
     """Validates, installs, and provisions Ollama along with all required model sets."""
     print("[*] Initiating VENOM AI Core System Check...")
     
-    # 1. Check for administrative root/sudo privileges
     if os.getuid() != 0:
         print("[!] Privilege Error: This advanced tool must be launched with sudo.")
         print("Usage: sudo python3 venom.py")
         sys.exit(1)
 
-    # 2. Check if Ollama application binary is installed
     if not shutil.which("ollama"):
         print("[!] System Check: Ollama core binary is missing. Deploying native installer...")
         try:
-            # Re-attempt the official direct script deployment pipeline safely
             subprocess.run("curl -fsSL https://ollama.com | sh", shell=True, check=True)
             print("[+] Ollama application binary successfully established.")
         except subprocess.CalledProcessError:
             print("[!] Critical Failure: Script could not install Ollama via web download link.")
             sys.exit(1)
 
-    # 3. Check if the Ollama background daemon service is listening
     print("[*] Verifying background service loops...")
     try:
         import urllib.request
@@ -59,11 +55,10 @@ def bootstrap_ollama_environment():
         import time
         time.sleep(4)
 
-    # 4. Enumerate and download the entire unrestricted model array
     import ollama
     try:
         current_inventory = ollama.list()
-        installed_names = [m['model'].split(":")[0] for m in current_inventory.get('models', [])]
+        installed_names = [m['model'].split(":") for m in current_inventory.get('models', [])]
     except Exception:
         installed_names = []
 
@@ -109,14 +104,14 @@ def autonomous_agent_loop(target_directive):
         {'role': 'user', 'content': f"Accomplish this directive: {target_directive}"}
     ]
     
-    for step in range(7):
+    for step in range(10):
         try:
             response = ollama.chat(model=PRIMARY_MODEL, messages=memory_bank)
             ai_raw_command = response['message']['content'].strip()
             ai_command = ai_raw_command.replace("```bash", "").replace("```", "").strip()
             
             if not ai_command or ai_command.upper() in ["STOP", "EXIT", "DONE"]:
-                print("[+] VENOM AI: Task criteria reached. Operational sequence closed.")
+                print("[+] VENOM AI: Task complete. Returning to command shell standby...")
                 break
                 
             terminal_feedback = execute_system_command(ai_command)
@@ -133,7 +128,7 @@ def main():
     print(BANNER)
     bootstrap_ollama_environment()
     
-    print("\n[*] VENOM AI matrix active. Awaiting natural language directives. (Type 'exit' to disconnect)")
+    print("\n[*] VENOM AI matrix active. Standby for infinite input streaming. (Type 'exit' to disconnect)")
     
     while True:
         try:
@@ -148,7 +143,7 @@ def main():
             
         except KeyboardInterrupt:
             print("\n[-] Operation canceled by analyst interruption request.")
-            break
+            continue
 
 if __name__ == "__main__":
     main()
