@@ -1,0 +1,610 @@
+
+
+
+
+
+
+
+
+
+<!doctype html>
+<html class="h-full overflow-y-scroll">
+  <head>
+    <title>Ollama</title>
+
+    <meta charset="utf-8" />
+    <meta name="description" content="Ollama is the easiest way to automate your work using open models, while keeping your data safe."/>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta property="og:title" content="Ollama" />
+    <meta property="og:description" content="Ollama is the easiest way to automate your work using open models, while keeping your data safe." />
+    <meta property="og:url" content="https://ollama.com" />
+    <meta property="og:image" content="https://ollama.com/public/og.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="628" />
+    <meta property="og:type" content="website" />
+
+    <meta name="robots" content="index, follow" />
+
+    <meta property="twitter:card" content="summary" />
+    <meta property="twitter:title" content="Ollama" />
+    <meta property="twitter:description" content="Ollama is the easiest way to automate your work using open models, while keeping your data safe." />
+    <meta property="twitter:site" content="ollama" />
+
+    <meta property="twitter:image:src" content="https://ollama.com/public/og-twitter.png" />
+    <meta property="twitter:image:width" content="1200" />
+    <meta property="twitter:image:height" content="628" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <link rel="icon" type="image/png" sizes="16x16" href="/public/icon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/public/icon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/public/icon-48x48.png" />
+    <link rel="icon" type="image/png" sizes="64x64" href="/public/icon-64x64.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/public/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/public/android-chrome-icon-192x192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/public/android-chrome-icon-512x512.png" />
+
+    
+    
+
+    <link href="/public/tailwind.css?v=10f69c3233add71c93e58e0a49ea6ff3" rel="stylesheet" />
+    <link href="/public/vendor/prism/prism.css?v=10f69c3233add71c93e58e0a49ea6ff3" rel="stylesheet" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Ollama",
+        "url": "https://ollama.com"
+      }
+    </script>
+
+    <script type="text/javascript">
+      function copyToClipboard(element) {
+        let commandElement = null;
+        const preElement = element.closest('pre');
+        const languageNoneElement = element.closest('.language-none');
+
+        if (preElement) {
+          commandElement = preElement.querySelector('code');
+        } else if (languageNoneElement) {
+          commandElement = languageNoneElement.querySelector('.command');
+        } else {
+          const parent = element.parentElement;
+          if (parent) {
+            commandElement = parent.querySelector('.command');
+          }
+        }
+
+        if (!commandElement) {
+          console.error('No code or command element found');
+          return;
+        }
+
+        const code = commandElement.textContent ? commandElement.textContent.trim() : commandElement.value;
+
+        navigator.clipboard
+          .writeText(code)
+          .then(() => {
+            const copyIcon = element.querySelector('.copy-icon')
+            const checkIcon = element.querySelector('.check-icon')
+
+            copyIcon.classList.add('hidden')
+            checkIcon.classList.remove('hidden')
+
+            setTimeout(() => {
+              copyIcon.classList.remove('hidden')
+              checkIcon.classList.add('hidden')
+            }, 2000)
+          })
+      }
+    </script>
+    
+    <script>
+      
+      function getIcon(url) {
+        url = url.toLowerCase();
+        if (url.includes('x.com') || url.includes('twitter.com')) return 'x';
+        if (url.includes('github.com')) return 'github';
+        if (url.includes('linkedin.com')) return 'linkedin';
+        if (url.includes('youtube.com')) return 'youtube';
+        if (url.includes('hf.co') || url.includes('huggingface.co') || url.includes('huggingface.com')) return 'hugging-face';
+        return 'default';
+      }
+
+      function setInputIcon(input) {
+        const icon = getIcon(input.value);
+        const img = input.previousElementSibling.querySelector('img');
+        img.src = `/public/social/${icon}.svg`;
+        img.alt = `${icon} icon`;
+      }
+
+      function setDisplayIcon(imgElement, url) {
+        const icon = getIcon(url);
+        imgElement.src = `/public/social/${icon}.svg`;
+        imgElement.alt = `${icon} icon`;
+      }
+    </script>
+    
+    <script src="/public/vendor/htmx/bundle.js"></script>
+  </head>
+
+  <body
+    class="
+      antialiased
+      min-h-screen
+      w-full
+      m-0
+      flex
+      flex-col
+    "
+    hx-on:keydown="
+      if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+        // Ignore key events in input fields.
+        return;
+      }
+      if ((event.metaKey && event.key === 'k') || event.key === '/') {
+        event.preventDefault();
+        const sp = htmx.find('#search') || htmx.find('#navbar-input');
+        sp.focus();
+      }
+    "
+  >
+    
+        
+<header class="sticky top-0 z-40 bg-white underline-offset-4 lg:static">
+  <nav class="flex w-full items-center justify-between px-6 py-[9px]">
+    <a href="/" class="z-50">
+      <img src="/public/ollama.png" class="w-8" alt="Ollama" />
+    </a>
+    
+    
+    <div class="hidden lg:flex xl:flex-1 items-center space-x-6 ml-6 mr-6 xl:mr-0 text-lg">
+      <a class="hover:underline focus:underline focus:outline-none focus:ring-0" href="/search">Models</a>
+      <a class="hover:underline focus:underline focus:outline-none focus:ring-0" href="/docs">Docs</a>
+      <a class="hover:underline focus:underline focus:outline-none focus:ring-0" href="/pricing">Pricing</a>
+    </div>
+
+    
+    <div class="flex-grow justify-center items-center hidden lg:flex">
+      <div class="relative w-full xl:max-w-[28rem]">
+        
+<form action="/search" autocomplete="off">
+  <div 
+    class="relative flex w-full appearance-none bg-black/5 border border-neutral-100 items-center rounded-full"
+    hx-on:focusout="
+      if (!this.contains(event.relatedTarget)) {
+        const searchPreview = document.querySelector('#searchpreview');
+        if (searchPreview) {
+          htmx.addClass('#searchpreview', 'hidden');
+        }
+      }
+    "
+  >
+  <span id="searchIcon" class="pl-2 text-2xl text-neutral-500">
+    <svg class="mt-0.25 ml-1.5 h-5 w-5 fill-current" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+      <path d="m8.5 3c3.0375661 0 5.5 2.46243388 5.5 5.5 0 1.24832096-.4158777 2.3995085-1.1166416 3.3225711l4.1469717 4.1470988c.2928932.2928932.2928932.767767 0 1.0606602-.2662666.2662665-.6829303.2904726-.9765418.0726181l-.0841184-.0726181-4.1470988-4.1469717c-.9230626.7007639-2.07425014 1.1166416-3.3225711 1.1166416-3.03756612 0-5.5-2.4624339-5.5-5.5 0-3.03756612 2.46243388-5.5 5.5-5.5zm0 1.5c-2.209139 0-4 1.790861-4 4s1.790861 4 4 4 4-1.790861 4-4-1.790861-4-4-4z" />
+    </svg>
+  </span>
+  <input
+    id="search"
+    hx-get="/search"
+    hx-trigger="keyup changed delay:100ms, focus"
+    hx-target="#searchpreview"
+    hx-swap="innerHTML"
+    name="q"
+    class="resize-none rounded-full border-0 py-2.5 bg-transparent text-sm w-full placeholder:text-neutral-500 focus:outline-none focus:ring-0"
+    placeholder="Search models"
+    autocomplete="off"
+    hx-on:keydown="
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        window.location.href = '/search?q=' + encodeURIComponent(this.value);
+        return;
+      }
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        this.value = '';
+        this.blur();
+        htmx.addClass('#searchpreview', 'hidden');
+        return;
+      }
+      if (event.key === 'Tab') { 
+        htmx.addClass('#searchpreview', 'hidden');
+        return;
+      }
+      if (event.key === 'ArrowDown') {
+        let first = document.querySelector('#search-preview-list a:first-of-type');
+        first?.focus();
+        event.preventDefault();
+      }
+      if (event.key === 'ArrowUp') {
+        let last = document.querySelector('#view-all-link');
+        last?.focus();
+        event.preventDefault();
+      }
+      htmx.removeClass('#searchpreview', 'hidden');
+    "
+    hx-on:focus="
+      htmx.removeClass('#searchpreview', 'hidden')
+    "
+  />
+</form>
+<div id="searchpreview" class="hidden absolute left-0 right-0 top-12 z-50" style="width: calc(100% + 2px); margin-left: -1px;"></div>
+</div>
+
+      </div>
+    </div>
+
+    
+    <div class="hidden lg:flex xl:flex-1 items-center space-x-2 justify-end ml-6 xl:ml-0">
+      
+        <a class="flex cursor-pointer items-center rounded-full bg-black/5 hover:bg-black/10 text-lg px-4 py-1.5 text-black whitespace-nowrap" href="/signin">Sign in</a>
+        <a class="flex cursor-pointer items-center rounded-full bg-neutral-800 text-lg px-4 py-1.5 text-white hover:bg-black whitespace-nowrap focus:bg-black" href="/download">Download</a>
+      
+    </div>
+    
+    
+    <div class="lg:hidden flex items-center">
+      <input type="checkbox" id="menu" class="peer hidden" />
+      <label for="menu" class="z-50 cursor-pointer peer-checked:hidden block">
+        <svg
+          class="h-8 w-8"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+          />
+        </svg>
+      </label>
+      <label for="menu" class="z-50 cursor-pointer hidden peer-checked:block fixed top-4 right-6">
+        <svg
+          class="h-8 w-8"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </label>
+      
+      <div class="fixed inset-0 bg-white z-40 hidden peer-checked:block overflow-y-auto">
+        <div class="flex flex-col space-y-5 pt-[5.5rem] text-3xl">
+          
+
+          
+          <a class="px-6" href="/search">Models</a>
+          <a class="px-6" href="/download">Download</a>
+          <a class="px-6" href="/docs">Docs</a>
+          <a class="px-6" href="/pricing">Pricing</a>
+
+          
+          <a href="/signin" class="block px-6">Sign in</a>
+          
+
+          
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+
+    
+
+    
+<main class="mx-auto w-full max-w-4xl px-6 pb-20 pt-12 md:pb-28 md:pt-24">
+  
+  <section class="mx-auto flex max-w-2xl flex-col items-center text-center">
+    <img src="/public/hello.png" alt="Ollama" class="block h-24 w-24 md:h-28 md:w-28" />
+    <h1 class="mt-8 text-3xl font-medium leading-tight font-rounded md:text-4xl">Build with open models,<br />on your computer and in the cloud</h1>
+    <div class="mt-8">
+      <a href="/download" class="inline-flex items-center justify-center rounded-full bg-neutral-900 px-8 py-3 text-base text-white hover:bg-black">Download</a>
+      <p class="mt-3 text-sm text-neutral-500">Free to start. <a href="/pricing" class="underline underline-offset-4 hover:text-neutral-800">See pricing</a></p>
+    </div>
+  </section>
+
+  
+  <section class="mt-24 md:mt-32">
+    <div class="grid grid-cols-1 items-start gap-10 md:grid-cols-2 md:gap-12">
+      <div>
+        <h2 class="text-2xl font-medium font-rounded tracking-tight md:text-3xl">Works with the tools you already use</h2>
+        <p class="mt-4 text-base leading-relaxed text-black">Bring open models into your workflow. Launch agents from the Ollama CLI, or connect editors and frameworks through Ollama&apos;s API.</p>
+        <a href="https://docs.ollama.com/integrations" target="_blank" rel="noopener noreferrer" class="mt-4 inline-block text-base text-neutral-500 underline underline-offset-4 hover:text-neutral-800">See all integrations &rarr;</a>
+      </div>
+      <div class="overflow-hidden rounded-lg border border-neutral-200">
+        <div class="flex items-center gap-2 bg-white px-4 py-3">
+          <span class="h-3 w-3 rounded-full" style="background-color: #f87171"></span>
+          <span class="h-3 w-3 rounded-full" style="background-color: #facc15"></span>
+          <span class="h-3 w-3 rounded-full" style="background-color: #4ade80"></span>
+        </div>
+        <div class="bg-white px-5 py-6 font-mono text-sm leading-relaxed text-neutral-600">
+          <p><span class="text-neutral-400">$</span> ollama</p>
+          <div class="mt-4 space-y-2 text-neutral-800">
+            <p><span>&#9656;</span> <span class="font-medium">Run a model</span></p>
+            <p class="ml-2"><span class="font-medium">Launch Claude Code</span></p>
+            <p class="ml-2"><span class="font-medium">Launch OpenCode</span></p>
+            <p class="ml-2"><span class="font-medium">Launch Hermes Agent</span></p>
+            <p class="ml-2"><span class="font-medium">More...</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  
+  <section class="mt-24 md:mt-32">
+    <div class="flex flex-col gap-4">
+      <h2 class="text-2xl font-medium font-rounded tracking-tight md:text-3xl">Your data stays yours</h2>
+      <a href="/privacy" class="self-start text-base text-neutral-500 underline underline-offset-4 hover:text-neutral-800">How we handle data &rarr;</a>
+    </div>
+    <div class="mt-8 grid grid-cols-1 gap-x-12 gap-y-8 sm:grid-cols-2">
+      <div>
+        <p class="flex items-center gap-3 text-base font-medium">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4 shrink-0 text-neutral-400">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"></path>
+          </svg>
+          Private
+        </p>
+        <p class="mt-1 text-sm leading-relaxed text-neutral-500">Your data is never trained on.</p>
+      </div>
+      <div>
+        <p class="flex items-center gap-3 text-base font-medium">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4 shrink-0 text-neutral-400">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418"></path>
+          </svg>
+          Regions
+        </p>
+        <p class="mt-1 text-sm leading-relaxed text-neutral-500">Cloud models in the United States, Europe, and Singapore.</p>
+      </div>
+      <div>
+        <p class="flex items-center gap-3 text-base font-medium">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4 shrink-0 text-neutral-400">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.5 16.5a5 5 0 0 1 7 0M2 8.82a15 15 0 0 1 4.17-2.65M10.66 5c4.01-.36 8.14.9 11.34 3.76M16.85 11.25a10 10 0 0 1 2.22 1.68M5 13a10 10 0 0 1 5.24-2.76M12 20h.01M2 2l20 20"></path>
+          </svg>
+          Disconnected
+        </p>
+        <p class="mt-1 text-sm leading-relaxed text-neutral-500">Run entirely offline for mission critical work.</p>
+      </div>
+      <div>
+        <p class="flex items-center gap-3 text-base font-medium">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4 shrink-0 text-neutral-400">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5"></path>
+          </svg>
+          Open
+        </p>
+        <p class="mt-1 text-sm leading-relaxed text-neutral-500">Open model weights and <a href="https://github.com/ollama/ollama" class="underline underline-offset-4 hover:text-neutral-600">open-source code</a>.</p>
+      </div>
+    </div>
+  </section>
+
+  
+  <section class="mt-24 md:mt-32">
+    <div class="flex flex-col gap-4">
+      <h2 class="text-2xl font-medium font-rounded tracking-tight md:text-3xl">Trending models</h2>
+      <a href="/search" class="self-start text-base text-neutral-500 underline underline-offset-4 hover:text-neutral-800">Explore models &rarr;</a>
+    </div>
+    
+    <ul role="list" class="mt-8 overflow-hidden rounded-lg border border-neutral-200 divide-y divide-neutral-200">
+    
+    <li>
+      <a href="/library/glm-5.2" class="group grid grid-cols-[1.25rem_minmax(0,1fr)_auto] items-center gap-x-4 px-6 py-5 hover:bg-neutral-50 lg:grid-cols-[1.25rem_minmax(0,1fr)_15.5rem_6rem_10rem] lg:gap-x-6 lg:px-8">
+        <span  class="text-sm font-medium text-neutral-400 tabular-nums">1</span>
+        <h3 class="min-w-0 truncate text-base font-medium underline-offset-2 group-hover:underline">glm-5.2</h3>
+        <div class="hidden items-center gap-x-2 overflow-hidden whitespace-nowrap lg:flex">
+          
+          <span class="inline-flex items-center rounded-full border border-neutral-200 px-2 py-[2px] text-xs font-medium text-neutral-500">cloud</span>
+          
+          
+          
+          
+          <span class="inline-flex items-center rounded-full border border-neutral-200 px-2 py-[2px] text-xs font-medium text-neutral-500">tools</span>
+          
+          
+          <span class="inline-flex items-center rounded-full border border-neutral-200 px-2 py-[2px] text-xs font-medium text-neutral-500">thinking</span>
+          
+          
+          
+          
+        </div>
+        <p class="flex w-28 items-center whitespace-nowrap text-[13px] font-medium text-neutral-500 lg:contents">
+          <span class="hidden items-center tabular-nums lg:flex">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="mr-1.5 h-[14px] w-[14px] shrink-0 sm:h-4 sm:w-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"></path>
+            </svg>
+            312.8K<span class="hidden lg:inline">&nbsp;Pulls</span>
+            
+          </span>
+          <span class="flex items-center" title="Jun 16, 2026 5:39 PM UTC">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="mr-1.5 h-[14px] w-[14px] shrink-0 sm:h-4 sm:w-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path>
+            </svg>
+            <span class="hidden lg:inline">Updated&nbsp;</span>1 month ago
+            
+          </span>
+        </p>
+      </a>
+    </li>
+    
+    <li>
+      <a href="/library/deepseek-v4-flash" class="group grid grid-cols-[1.25rem_minmax(0,1fr)_auto] items-center gap-x-4 px-6 py-5 hover:bg-neutral-50 lg:grid-cols-[1.25rem_minmax(0,1fr)_15.5rem_6rem_10rem] lg:gap-x-6 lg:px-8">
+        <span  class="text-sm font-medium text-neutral-400 tabular-nums">2</span>
+        <h3 class="min-w-0 truncate text-base font-medium underline-offset-2 group-hover:underline">deepseek-v4-flash</h3>
+        <div class="hidden items-center gap-x-2 overflow-hidden whitespace-nowrap lg:flex">
+          
+          <span class="inline-flex items-center rounded-full border border-neutral-200 px-2 py-[2px] text-xs font-medium text-neutral-500">cloud</span>
+          
+          
+          
+          
+          <span class="inline-flex items-center rounded-full border border-neutral-200 px-2 py-[2px] text-xs font-medium text-neutral-500">tools</span>
+          
+          
+          <span class="inline-flex items-center rounded-full border border-neutral-200 px-2 py-[2px] text-xs font-medium text-neutral-500">thinking</span>
+          
+          
+          
+          
+        </div>
+        <p class="flex w-28 items-center whitespace-nowrap text-[13px] font-medium text-neutral-500 lg:contents">
+          <span class="hidden items-center tabular-nums lg:flex">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="mr-1.5 h-[14px] w-[14px] shrink-0 sm:h-4 sm:w-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"></path>
+            </svg>
+            363.6K<span class="hidden lg:inline">&nbsp;Pulls</span>
+            
+          </span>
+          <span class="flex items-center" title="Aug 1, 2026 5:21 AM UTC">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="mr-1.5 h-[14px] w-[14px] shrink-0 sm:h-4 sm:w-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path>
+            </svg>
+            <span class="hidden lg:inline">Updated&nbsp;</span>1 week ago
+            
+          </span>
+        </p>
+      </a>
+    </li>
+    
+    <li>
+      <a href="/library/kimi-k3" class="group grid grid-cols-[1.25rem_minmax(0,1fr)_auto] items-center gap-x-4 px-6 py-5 hover:bg-neutral-50 lg:grid-cols-[1.25rem_minmax(0,1fr)_15.5rem_6rem_10rem] lg:gap-x-6 lg:px-8">
+        <span  class="text-sm font-medium text-neutral-400 tabular-nums">3</span>
+        <h3 class="min-w-0 truncate text-base font-medium underline-offset-2 group-hover:underline">kimi-k3</h3>
+        <div class="hidden items-center gap-x-2 overflow-hidden whitespace-nowrap lg:flex">
+          
+          <span class="inline-flex items-center rounded-full border border-neutral-200 px-2 py-[2px] text-xs font-medium text-neutral-500">cloud</span>
+          
+          
+          <span class="inline-flex items-center rounded-full border border-neutral-200 px-2 py-[2px] text-xs font-medium text-neutral-500">vision</span>
+          
+          
+          
+          <span class="inline-flex items-center rounded-full border border-neutral-200 px-2 py-[2px] text-xs font-medium text-neutral-500">tools</span>
+          
+          
+          <span class="inline-flex items-center rounded-full border border-neutral-200 px-2 py-[2px] text-xs font-medium text-neutral-500">thinking</span>
+          
+          
+          
+          
+        </div>
+        <p class="flex w-28 items-center whitespace-nowrap text-[13px] font-medium text-neutral-500 lg:contents">
+          <span class="hidden items-center tabular-nums lg:flex">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="mr-1.5 h-[14px] w-[14px] shrink-0 sm:h-4 sm:w-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"></path>
+            </svg>
+            36.2K<span class="hidden lg:inline">&nbsp;Pulls</span>
+            
+          </span>
+          <span class="flex items-center" title="Jul 27, 2026 3:53 PM UTC">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="mr-1.5 h-[14px] w-[14px] shrink-0 sm:h-4 sm:w-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path>
+            </svg>
+            <span class="hidden lg:inline">Updated&nbsp;</span>2 weeks ago
+            
+          </span>
+        </p>
+      </a>
+    </li>
+    
+    </ul>
+    
+  </section>
+
+  
+  <section class="mt-24 md:mt-32">
+    <div class="flex flex-col items-center gap-6 text-center">
+      <h2 class="text-2xl font-medium font-rounded md:text-3xl">Get started with Ollama</h2>
+      <a href="/download" class="inline-flex items-center justify-center rounded-full bg-neutral-900 px-8 py-3 text-base text-white hover:bg-black">Download</a>
+    </div>
+  </section>
+</main>
+
+
+    
+      
+<footer class="mt-auto">
+
+  <div class="underline-offset-4 hidden md:block">
+    <div class="flex items-center justify-between px-6 py-3.5">
+      <div class="text-xs text-neutral-500">© 2026 Ollama</div>
+      <div class="flex space-x-6 text-xs text-neutral-500">
+        <a href="/download" class="hover:underline">Download</a>
+        <a href="/blog" class="hover:underline">Blog</a>
+        <a href="https://docs.ollama.com" class="hover:underline">Docs</a>
+        <a href="https://github.com/ollama/ollama" class="hover:underline">GitHub</a>
+        <a href="https://discord.com/invite/ollama" class="hover:underline">Discord</a>
+        <a href="https://twitter.com/ollama" class="hover:underline">X (Twitter)</a>
+        <a href="mailto:hello@ollama.com" class="hover:underline">Contact</a>
+        <a href="https://jobs.ashbyhq.com/ollama" class="hover:underline">Careers</a>
+        <a href="/privacy" class="hover:underline">Privacy</a>
+        <a href="/terms" class="hover:underline">Terms</a>
+      </div>
+    </div>
+  </div>
+  <div class="py-4 md:hidden">
+    <div class="flex flex-col items-center justify-center">
+      <ul class="flex flex-wrap items-center justify-center text-sm text-neutral-500">
+        <li class="mx-2 my-1">
+          <a href="/blog" class="hover:underline">Blog</a>
+        </li>
+        <li class="mx-2 my-1">
+          <a href="/download" class="hover:underline">Download</a>
+        </li>
+        <li class="mx-2 my-1">
+          <a href="https://docs.ollama.com" class="hover:underline">Docs</a>
+        </li>
+      </ul>
+      <ul class="flex flex-wrap items-center justify-center text-sm text-neutral-500">
+        <li class="mx-2 my-1">
+          <a href="https://github.com/ollama/ollama" class="hover:underline">GitHub</a>
+        </li>
+        <li class="mx-2 my-1">
+          <a href="https://discord.com/invite/ollama" class="hover:underline">Discord</a>
+        </li>
+        <li class="mx-2 my-1">
+          <a href="https://twitter.com/ollama" class="hover:underline">X (Twitter)</a>
+        </li>
+        <li class="mx-2 my-1">
+          <a href="https://lu.ma/ollama" class="hover:underline">Meetups</a>
+        </li>
+        <li class="mx-2 my-1">
+          <a href="https://jobs.ashbyhq.com/ollama" class="hover:underline">Careers</a>
+        </li>
+        <li class="mx-2 my-1">
+          <a href="/privacy" class="hover:underline">Privacy</a>
+        </li>
+        <li class="mx-2 my-1">
+          <a href="/terms" class="hover:underline">Terms</a>
+        </li>
+      </ul>
+      <div class="mt-2 flex items-center justify-center text-sm text-neutral-500">
+        © 2026 Ollama Inc.
+      </div>
+    </div>
+  </div>
+
+</footer>
+
+    
+
+    
+    <span class="hidden" id="end_of_template"></span>
+  </body>
+</html>
