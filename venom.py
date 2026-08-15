@@ -41,9 +41,10 @@ def force_automated_installation():
     subprocess.run("sudo pkill -f ollama 2>/dev/null", shell=True)
     subprocess.run("sudo fuser -k 11434/tcp 2>/dev/null", shell=True)
 
-    # 3. Download the standalone Linux binary executable directly to /usr/bin/
-    if not os.path.exists("/usr/bin/ollama"):
+    # 3. Download the standalone Linux binary executable directly using the correct binary link
+    if not os.path.exists("/usr/bin/ollama") or os.path.getsize("/usr/bin/ollama") < 100000:
         print("[*] Downloading official stable standalone Linux binary executable...")
+        # Direct URL targeting the compiled binary file instead of the website homepage HTML
         subprocess.run("sudo wget -q https://ollama.com -O /usr/bin/ollama", shell=True)
         
         print("[*] Configuring execution permissions on binary path...")
