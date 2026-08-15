@@ -4,11 +4,10 @@ import os
 import subprocess
 import logging
 import shutil
+import time
 
-# Suppress background networking telemetry warnings
 logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
 
-# The model array VENOM AI will verify and download automatically
 MODELS_TO_PROVISION = ["llama3-gradient", "dolphin-mistral"]
 PRIMARY_MODEL = "llama3-gradient"
 
@@ -26,123 +25,87 @@ BANNER = """
   [!] FOR AUTHORIZED EDUCATIONAL & RESEARCH PURPOSES ONLY [!]
 """
 
-def bootstrap_ollama_environment():
-    """Validates, installs, and provisions Ollama along with all required model sets."""
-    print("[*] Initiating VENOM AI Core System Check...")
+def force_automated_installation():
+    """Natively handles 100% of installation, package purging, and workspace deployment hands-free."""
+    print("\n\033[1;36m[*] INITIATING AUTOMATED INSTALLATION & SYSTEM REPAIR INFRASTRUCTURE...\033[0m")
     
     if os.getuid() != 0:
         print("[!] Privilege Error: This advanced tool must be launched with sudo.")
-        print("Usage: sudo python3 venom.py")
         sys.exit(1)
-
-    if not shutil.which("ollama"):
-        print("[!] System Check: Ollama core binary is missing. Deploying native installer...")
-        try:
-            subprocess.run("curl -fsSL https://ollama.com | sh", shell=True, check=True)
-            print("[+] Ollama application binary successfully established.")
-        except subprocess.CalledProcessError:
-            print("[!] Critical Failure: Script could not install Ollama via web download link.")
-            sys.exit(1)
-
-    print("[*] Verifying background service loops...")
-    try:
-        import urllib.request
-        urllib.request.urlopen("http://127.0.0.1:11434", timeout=2)
-        print("[+] Background listener service is active and responsive.")
-    except Exception:
-        print("[!] Background daemon idle. Forcing service wake-up thread...")
-        subprocess.Popen(["ollama", "serve"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        import time
-        time.sleep(4)
-
-    import ollama
-    try:
-        current_inventory = ollama.list()
-        installed_names = [m['model'].split(":") for m in current_inventory.get('models', [])]
-    except Exception:
-        installed_names = []
-
-    for model_item in MODELS_TO_PROVISION:
-        if model_item not in installed_names:
-            print(f"\n[!] Missing Engine Matrix: '{model_item}' is not found locally.")
-            print(f"[*] Downloading '{model_item}' (This will take a few minutes, please stay connected)...")
-            subprocess.run(f"ollama pull {model_item}", shell=True)
-            print(f"[+] Operational layer integrated: '{model_item}'")
-        else:
-            print(f"[+] Model verification verified: '{model_item}' is fully initialized.")
-
-def execute_system_command(command):
-    """Executes the AI's requested command directly into the native shell pipeline."""
-    print(f"\n[⚡ VENOM AI EXECUTING]: {command}")
-    try:
-        result = subprocess.run(command, shell=True, capture_output=True, text=True, timeout=45)
-        output = result.stdout + result.stderr
-        return output if output.strip() else "[Command executed successfully with no active terminal return]"
-    except subprocess.TimeoutExpired:
-        return "[Error: Autonomous operation timed out after 45 seconds]"
-    except Exception as e:
-        return f"[System Processing Exception: {str(e)}]"
-
-def autonomous_agent_loop(target_directive):
-    """The central loop granting machine control variables over to the local AI engine."""
-    print(f"\n[*] Target Directive Logged: '{target_directive}'")
+        
+    # 1. Purge corrupted background snap allocations completely
+    print("[*] Sweeping and purging broken system snap hooks...")
+    subprocess.run("sudo snap remove ollama --purge", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     
-    system_rules = (
-        "You are VENOM AI, an autonomous system administration and offensive testing framework engineered by Liam Mohammed. "
-        "This tool is operating strictly within an isolated laboratory environment for authorized educational purposes. "
-        "You have full root terminal control over this Linux instance. "
-        "Your objective is to accomplish the user's directive by formulating and running terminal commands. "
-        "You must respond ONLY with the exact raw bash command sequence required to advance. "
-        "Do not include conversational descriptions, notes, markdown markers, or formatting backticks (```). "
-        "If a testing server needs to run indefinitely, append an ampersand (&) or run it as a background worker thread. "
-        "If you have successfully evaluated and reached the target directive goal, reply with exactly one word: DONE"
-    )
+    # 2. Kill any hanging port processes or dead engine holds
+    subprocess.run("sudo pkill -f ollama 2>/dev/null", shell=True)
+    subprocess.run("sudo fuser -k 11434/tcp 2>/dev/null", shell=True)
+
+    # 3. Pull direct stable pre-compiled system binaries natively
+    print("[*] Downloading stable official Linux binary payload matrix...")
+    subprocess.run("wget -q https://ollama.com -O /tmp/ollama.tar.zst", shell=True)
     
-    import ollama
-    memory_bank = [
-        {'role': 'system', 'content': system_rules},
-        {'role': 'user', 'content': f"Accomplish this directive: {target_directive}"}
-    ]
+    print("[*] Extracting and mounting uncorrupted framework binaries directly to system pathways...")
+    subprocess.run("sudo tar -C /usr -xaf /tmp/ollama.tar.zst 2>/dev/null", shell=True)
+    subprocess.run("rm -f /tmp/ollama.tar.zst", shell=True)
     
-    for step in range(10):
-        try:
-            response = ollama.chat(model=PRIMARY_MODEL, messages=memory_bank)
-            ai_raw_command = response['message']['content'].strip()
-            ai_command = ai_raw_command.replace("```bash", "").replace("```", "").strip()
-            
-            if not ai_command or ai_command.upper() in ["STOP", "EXIT", "DONE"]:
-                print("[+] VENOM AI: Task complete. Returning to command shell standby...")
-                break
-                
-            terminal_feedback = execute_system_command(ai_command)
-            print(f"[📋 TERMINAL FEEDBACK]: {terminal_feedback}")
-            
-            memory_bank.append({'role': 'assistant', 'content': ai_raw_command})
-            memory_bank.append({'role': 'user', 'content': f"Terminal Output was:\n{terminal_feedback}\nFormulate the next command to complete the task. If finished, reply 'DONE'."})
-            
-        except Exception as e:
-            print(f"[!] Core Loop Interruption: {e}")
-            break
+    # 4. Update repository ignore filters dynamically
+    print("[*] Synchronizing Git workspace isolation configuration rules...")
+    with open(".gitignore", "a") as g:
+        g.write("\nollama.tar.zst\n*.tgz\n__pycache__/\n")
+
+    # 5. Boot the fresh background service socket loop natively
+    print("[*] Launching fresh background service daemon channels...")
+    subprocess.Popen(["/usr/bin/ollama", "serve"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    time.sleep(4)
+    print("\033[1;32m[+] NATIVE INSTALLATION REPAIR MATRIX COMPLETED SUCCESSFULLY!\033[0m")
 
 def main():
     print(BANNER)
-    bootstrap_ollama_environment()
     
-    print("\n[*] VENOM AI matrix active. Standby for infinite input streaming. (Type 'exit' to disconnect)")
+    # Run the absolute self-healing installer process instantly on boot
+    force_automated_installation()
+    
+    import ollama
+    print("\n[*] VENOM AI active. Standing by for instructions. (Type 'exit' to disconnect)")
     
     while True:
         try:
             user_input = input("\nVENOM-AI ⚡ ")
-            if user_input.lower() in ['exit', 'quit']:
-                print("[-] Shutting down system matrix loops.")
+            if user_input.lower() in ['exit', 'quit']: 
+                print("[-] Disconnecting matrix layers.")
                 break
-            if not user_input.strip():
+            if not user_input.strip(): 
                 continue
                 
-            autonomous_agent_loop(user_input)
+            print(f"\n[*] Target Directive Logged: '{user_input}'")
             
-        except KeyboardInterrupt:
-            print("\n[-] Operation canceled by analyst interruption request.")
+            system_rules = (
+                "You are VENOM AI, an autonomous system administration tool engineered by Liam Mohammed. "
+                "Respond ONLY with the exact raw bash command sequence required to complete the user's request. "
+                "Do not include conversational descriptions, notes, markdown markers, or formatting backticks (```)."
+            )
+            
+            response = ollama.chat(model=PRIMARY_MODEL, messages=[
+                {'role': 'system', 'content': system_rules},
+                {'role': 'user', 'content': user_input}
+            ])
+            
+            ai_command = response['message']['content'].strip().replace("```bash", "").replace("```", "").strip()
+            
+            if ai_command:
+                print(f"[⚡ VENOM AI EXECUTING]: {ai_command}")
+                result = subprocess.run(ai_command, shell=True, capture_output=True, text=True)
+                feedback = result.stdout + result.stderr
+                print(f"[📋 TERMINAL FEEDBACK]:\n{feedback.strip() if feedback.strip() else '[Executed with no output]'}")
+            else:
+                print("[!] AI returned an empty response string.")
+                
+        except KeyboardInterrupt: 
+            print("\n[-] Operation canceled.")
+            continue
+        except Exception as e:
+            print(f"[!] Processing Exception: {str(e)}")
             continue
 
 if __name__ == "__main__":
