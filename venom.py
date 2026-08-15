@@ -26,14 +26,14 @@ BANNER = """
 """
 
 def force_automated_installation():
-    """Natively handles 100% of installation, package purging, and workspace deployment hands-free."""
+    """Natively handles 100% of installation and standalone binary setup hands-free."""
     print("\n\033[1;36m[*] INITIATING AUTOMATED INSTALLATION & SYSTEM REPAIR INFRASTRUCTURE...\033[0m")
     
     if os.getuid() != 0:
         print("[!] Privilege Error: This advanced tool must be launched with sudo.")
         sys.exit(1)
         
-    # 1. Purge corrupted background snap allocations completely
+    # 1. Purge broken system snap allocations completely
     print("[*] Sweeping and purging broken system snap hooks...")
     subprocess.run("sudo snap remove ollama --purge", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     
@@ -41,26 +41,24 @@ def force_automated_installation():
     subprocess.run("sudo pkill -f ollama 2>/dev/null", shell=True)
     subprocess.run("sudo fuser -k 11434/tcp 2>/dev/null", shell=True)
 
-    # 3. Pull direct stable pre-compiled system binaries natively if missing
-    if not shutil.which("ollama"):
-        print("[*] Downloading stable official Linux binary payload matrix...")
-        subprocess.run("wget -q https://ollama.com -O /tmp/ollama.tar.zst", shell=True)
+    # 3. Download the standalone Linux binary executable directly to /usr/bin/
+    if not os.path.exists("/usr/bin/ollama"):
+        print("[*] Downloading official stable standalone Linux binary executable...")
+        subprocess.run("sudo wget -q https://ollama.com -O /usr/bin/ollama", shell=True)
         
-        print("[*] Extracting and mounting uncorrupted framework binaries directly to system pathways...")
-        subprocess.run("sudo tar -C /usr -xaf /tmp/ollama.tar.zst 2>/dev/null", shell=True)
-        subprocess.run("rm -f /tmp/ollama.tar.zst", shell=True)
+        print("[*] Configuring execution permissions on binary path...")
+        subprocess.run("sudo chmod +x /usr/bin/ollama", shell=True)
     
     # 4. Update repository ignore filters dynamically
     print("[*] Synchronizing Git workspace isolation configuration rules...")
     with open(".gitignore", "a") as g:
         g.write("\nollama.tar.zst\n*.tgz\n__pycache__/\n")
 
-    # 5. Determine correct path and boot the fresh background service socket loop natively
+    # 5. Boot the fresh standalone background service socket loop natively
     print("[*] Launching fresh background service daemon channels...")
-    ollama_path = shutil.which("ollama") or "/usr/local/bin/ollama"
-    subprocess.Popen([ollama_path, "serve"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    time.sleep(4)
-    print("\033[1;32m[+] NATIVE INSTALLATION REPAIR MATRIX COMPLETED SUCCESSFULLY!\033[0m")
+    subprocess.Popen(["/usr/bin/ollama", "serve"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    time.sleep(5)
+    print("\033[1;32m[+] NATIVE STANDALONE INSTALLATION REPAIR COMPLETED SUCCESSFULLY!\033[0m")
 
 def main():
     print(BANNER)
