@@ -41,22 +41,24 @@ def force_automated_installation():
     subprocess.run("sudo pkill -f ollama 2>/dev/null", shell=True)
     subprocess.run("sudo fuser -k 11434/tcp 2>/dev/null", shell=True)
 
-    # 3. Pull direct stable pre-compiled system binaries natively
-    print("[*] Downloading stable official Linux binary payload matrix...")
-    subprocess.run("wget -q https://ollama.com -O /tmp/ollama.tar.zst", shell=True)
-    
-    print("[*] Extracting and mounting uncorrupted framework binaries directly to system pathways...")
-    subprocess.run("sudo tar -C /usr -xaf /tmp/ollama.tar.zst 2>/dev/null", shell=True)
-    subprocess.run("rm -f /tmp/ollama.tar.zst", shell=True)
+    # 3. Pull direct stable pre-compiled system binaries natively if missing
+    if not shutil.which("ollama"):
+        print("[*] Downloading stable official Linux binary payload matrix...")
+        subprocess.run("wget -q https://ollama.com -O /tmp/ollama.tar.zst", shell=True)
+        
+        print("[*] Extracting and mounting uncorrupted framework binaries directly to system pathways...")
+        subprocess.run("sudo tar -C /usr -xaf /tmp/ollama.tar.zst 2>/dev/null", shell=True)
+        subprocess.run("rm -f /tmp/ollama.tar.zst", shell=True)
     
     # 4. Update repository ignore filters dynamically
     print("[*] Synchronizing Git workspace isolation configuration rules...")
     with open(".gitignore", "a") as g:
         g.write("\nollama.tar.zst\n*.tgz\n__pycache__/\n")
 
-    # 5. Boot the fresh background service socket loop natively
+    # 5. Determine correct path and boot the fresh background service socket loop natively
     print("[*] Launching fresh background service daemon channels...")
-    subprocess.Popen(["/usr/bin/ollama", "serve"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    ollama_path = shutil.which("ollama") or "/usr/local/bin/ollama"
+    subprocess.Popen([ollama_path, "serve"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     time.sleep(4)
     print("\033[1;32m[+] NATIVE INSTALLATION REPAIR MATRIX COMPLETED SUCCESSFULLY!\033[0m")
 
